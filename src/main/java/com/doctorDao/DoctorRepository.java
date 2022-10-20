@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.RowMapper;
 import com.doctor.Doctor;
 import com.doctor.Patient;
 
-public class DoctorRepository {
+public class DoctorRepository implements DocterDao{
 
 	private JdbcTemplate jd;
 
@@ -27,10 +27,10 @@ public class DoctorRepository {
 	public void setJd(JdbcTemplate jd) {
 		this.jd = jd;
 	}
+	List<Patient> p=new ArrayList<Patient>();
 
 	public Integer saveDocter(final Doctor d, final Patient p) {
 		String sql = "insert into doctor(doc_id,doc_name,specialist,experience) values(?,?,?,?)";
-		System.out.println(d.getName());
 		Integer list = jd.execute(sql, new PreparedStatementCallback<Integer>() {
 			public Integer doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
 				ps.setInt(1, d.getId());
@@ -41,12 +41,11 @@ public class DoctorRepository {
 			}
 
 		});
-		savePatient(p);
+		saveOrUpdatePatient(p);
 		return list;
-
 	}
 
-	public Integer savePatient(final Patient p) {
+	public Integer saveOrUpdatePatient(final Patient p) {
 		String sql = "insert into patient values(?,?,?,?)";
 		Integer list = jd.execute(sql, new PreparedStatementCallback<Integer>() {
 			public Integer doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
@@ -64,6 +63,7 @@ public class DoctorRepository {
 
 	public List<Doctor> getAllDoctors() {
 		String sql = "select * from doctor";
+		//return jd.query(sql, BeanPropertyRowMapper.newInstance(Doctor.class));
 		return jd.query(sql, new ResultSetExtractor<List<Doctor>>() {
 
 			public List<Doctor> extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -81,10 +81,13 @@ public class DoctorRepository {
 			}
 
 		});
+			
 	}
 
 	public List<Patient> getAllPatients() {
 		String sql = "select * from patient";
+		
+	//	return jd.query(sql,BeanPropertyRowMapper.newInstance(Patient.class));
 		List<Patient> plist = jd.query(sql, new RowMapper<Patient>() {
 
 			public Patient mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -97,14 +100,24 @@ public class DoctorRepository {
 			}
 
 		});
-
 		return plist;
 	}
 
-	public List<Patient> getPatientByDocId(int id) {
+	public Boolean getPatientByDocId(final int id) {
 		String sql = "select * from patient where doc_id=?";
-		List<Patient> list = jd.query(sql, new BeanPropertyRowMapper<Patient>(Patient.class), id);
-		return list;
+		return jd.execute(sql, new PreparedStatementCallback<Boolean>() {
+
+			public Boolean doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
+				ps.setInt(1, id);
+				return ps.execute();
+			}
+		});
+		
+	}
+	
+	public Doctor getDocbyId() {
+		String sql="select * from doctor where doc_id=?";
+		return jd.queryForObject(sql, BeanPropertyRowMapper.newInstance(Doctor.class));
 	}
 
 }

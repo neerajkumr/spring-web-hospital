@@ -15,7 +15,7 @@ import com.google.gson.Gson;
 
 @RestController
 public class ControllerClass {
-	
+
 	@Autowired
 	public DoctorRepository docRep;
 
@@ -34,11 +34,11 @@ public class ControllerClass {
 	public String getDoc(@PathVariable int id) {
 		return (new Gson().toJson(docRep.getPatientByDocId(id)));
 	}
-	
-	@PostMapping(path = "/Getboth",consumes="application/json" ,produces = "application/json")
+
+	@PostMapping(path = "/Getboth", consumes = "application/json", produces = "application/json")
 	public String InsertBoth(@RequestBody Doctor d) {
-		Patient p=d.getPat().get(0);
-		System.out.println(d.getName());
-		return (new Gson().toJson(docRep.saveDocter(d,p)));
+		Patient p = d.getPat().get(0);
+		return (new Gson().toJson(docRep.saveDocter(d, p)));
 	}
+
 }
